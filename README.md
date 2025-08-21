@@ -6,7 +6,7 @@
 updated syntax for 2025 use.
 unable to bypass code 420.
 
-/n/n
+\n\n
 ## Download
 To download, click on the green 'code' button and 'download zip'. Be sure to extract the zip contents to it's own folder.
 
