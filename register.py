@@ -27,7 +27,12 @@ except:
     exit()
 
 APP_NAME = "com.amazon.rabbit"
-APP_VERSION = "303338310"
+try:
+    with open('userdata/version', 'r') as v:
+        APP_VERSION = v.read().strip()
+except FileNotFoundError:
+    print("Please set the app version first by running Set_App_Version.")
+    exit()
 DEVICE_NAME = "Le X522"
 MANUFACTURER = "LeMobile"
 OS_VERSION = "LeEco/Le2_NA/le_s2_na:6.0.1/IFXNAOP5801910272S/61:user/release-keys"

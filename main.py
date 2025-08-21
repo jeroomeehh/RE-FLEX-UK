@@ -1,3 +1,5 @@
+# (In main.py)
+import get_user_agent # <--- ADD THIS LINE
 import requests, json, time, logging, random
 from datetime import datetime, date
 import header_data
@@ -13,18 +15,22 @@ from signature_headers import signature_headers
 
 MARKETPLACE = "ATVPDKIKX0DER"
 
-ver = get_flex_version()
-if not ver:
-    if not os.path.exists("userdata/version"):
-        print("Please set the current Android Flex app version!\nFollowed by the useragent!")
-        exit()
-    else:
-        with open('userdata/version', 'r') as v:
-            ver = v.read()
-
-if not os.path.exists("userdata/useragent"):
-    print("Please set your useragent!")
+try:
+    with open('userdata/version', 'r') as v:
+        ver = v.read().strip()
+except FileNotFoundError:
+    print("App version not set. Please run 'Set_App_Version' from the Script Dock.")
     exit()
+
+
+# --- REPLACE THE OLD BLOCK WITH THIS ---
+print("Fetching the latest User-Agent...")
+ua = get_user_agent.get_latest_user_agent()
+# Save the fetched user-agent for consistency in this session
+with open('userdata/useragent', 'w') as u_file:
+    u_file.write(ua)
+print(f"Using User-Agent: {ua}")
+# --- END OF REPLACEMENT BLOCK ---
 
 def load_data(filepath):
     with open(filepath, 'r') as f:
@@ -153,13 +159,16 @@ def get_offer_list(rejected_ids: set):
         json=json_data.search_json_data,
         session=session
     )
+    # (In main.py)
     if response.status_code != 200:
-        if response.status_code == 400:
-            j = json.loads(response.text)
+        if response.status_code == 400 or response.status_code == 420: # <--- CHANGE IS HERE
+            try:
+                j = json.loads(response.text)
+            except json.JSONDecodeError:
+                j = {"message": "Could not decode JSON from response."}
             with open ("debugging/test", "a+") as t:
-                if "message" in j:
-                    print(f"{time.strftime('%I:%M:%S %p')}, {j}", file=t)
-            return [400]
+                print(f"{time.strftime('%I:%M:%S %p')}, {j}, \nStatus code: {response.status_code}", file=t)
+            return [response.status_code] # <--- AND HERE
         else:
             try:
                 j = json.loads(response.text)
@@ -408,8 +417,8 @@ if __name__ == "__main__":
             #traceback.print_exc()
             authCycle.authCycle()
             lst = get_offer_list(rejected_ids)
-        if 400 in lst:
-            logging.info("Rate Exceeded, Waiting")
+        if 400 in lst or 420 in lst: # <--- CHANGE IS HERE
+            logging.info("Rate Exceeded or Security Challenge, Waiting")
             rate_sleep_print()
             time.sleep(ratelimitsleep*60)
             logging.info("Resuming operations")

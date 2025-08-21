@@ -3,6 +3,7 @@ from tkinter import ttk
 import subprocess
 import time
 import os
+import sys  # <--- 1. Import the sys module
 
 python = "python"  # default value of the python variable
 
@@ -69,7 +70,8 @@ class App:
             return
 
         # Start the main script in the current terminal window
-        script["process"] = subprocess.Popen([python, script_name + ".py"])
+        # --- 2. Use sys.executable instead of the 'python' variable ---
+        script["process"] = subprocess.Popen([sys.executable, script_name + ".py"])
 
 
     def check_status(self, script_name):
@@ -111,11 +113,17 @@ scripts = ["main"]
 for script in scripts:
     app.add_script(script)
 
-if not os.path.exists("userdata/useragent"):
-
-    scriptsn = ["Check_Logs", "Choose_Station_Filter", "Set_Filter_Values", "Set_App_Version", "Set_Speeds_and_Behavior", "Offer_List_Debug", "Set_User_Agent", "delete_access_token"]
-else:
-    scriptsn = ["Check_Logs", "Choose_Station_Filter", "Set_Filter_Values", "Set_App_Version", "Set_Speeds_and_Behavior", "Offer_List_Debug", "delete_access_token"]
+# --- ADD THIS NEW BLOCK ---
+scriptsn = [
+    "Check_Logs",
+    "Choose_Station_Filter",
+    "Set_Filter_Values",
+    "Set_App_Version",
+    "Set_Speeds_and_Behavior",
+    "Offer_List_Debug",
+    "delete_access_token"
+]
+# --- END OF NEW BLOCK ---
 
 for script in scriptsn:
     app.add_script(script, has_stop_button=False)
